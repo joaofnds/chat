@@ -16,41 +16,25 @@ var Module = fx.Module(
 	fx.Provide(NewSQLDB),
 	fx.Provide(NewHealthChecker),
 	fx.Invoke(HookConnection),
+	fx.Invoke(enableUUIDExtension),
 )
 
 func NewGORMDB(postgresConfig Config, logger *zap.Logger) (*gorm.DB, error) {
-	db, err := gorm.Open(postgres.Open(postgresConfig.Addr))
-	if err != nil {
-		logger.Error("failed to connect to postgres", zap.Error(err))
-		return nil, err
-	}
-
-	return db, nil
+	return gorm.Open(postgres.Open(postgresConfig.Addr))
 }
 
-func NewSQLDB(db *gorm.DB) (*sql.DB, error) {
-	return db.DB()
+func NewSQLDB(orm *gorm.DB) (*sql.DB, error) {
+	return orm.DB()
 }
 
-func HookConnection(lifecycle fx.Lifecycle, sqlDB *sql.DB, logger *zap.Logger) {
+func HookConnection(lifecycle fx.Lifecycle, db *sql.DB, logger *zap.Logger) {
 	lifecycle.Append(fx.Hook{
-		OnStart: func(ctx context.Context) error {
-			if err := sqlDB.PingContext(ctx); err != nil {
-				logger.Error("failed to ping db", zap.Error(err))
-				return err
-			}
-			logger.Info("successfully pinged db")
-
-			return nil
-		},
-
-		OnStop: func(ctx context.Context) error {
-			if err := sqlDB.Close(); err != nil {
-				logger.Error("failed to close db connection", zap.Error(err))
-				return err
-			}
-
-			return nil
-		},
+		OnStart: func(ctx context.Context) error { return db.PingContext(ctx) },
+		OnStop:  func(ctx context.Context) error { return db.Close() },
 	})
+}
+
+func enableUUIDExtension(db *sql.DB) error {
+	_, err := db.ExecContext(context.Background(), `CREATE EXTENSION IF NOT EXISTS "uuid-ossp";`)
+	return err
 }

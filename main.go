@@ -8,6 +8,7 @@ import (
 	"app/adapters/postgres"
 
 	"app/config"
+	"app/message"
 	"app/user"
 
 	"go.uber.org/fx"
@@ -24,5 +25,6 @@ func main() {
 		postgres.Module,
 
 		user.Module,
+		message.Module,
 	).Run()
 }
