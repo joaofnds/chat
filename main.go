@@ -8,6 +8,7 @@ import (
 	"app/adapters/postgres"
 
 	"app/config"
+	"app/conversation"
 	"app/message"
 	"app/user"
 
@@ -25,6 +26,7 @@ func main() {
 		postgres.Module,
 
 		user.Module,
+		conversation.Module,
 		message.Module,
 	).Run()
 }
