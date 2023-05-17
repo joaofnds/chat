@@ -1,0 +1,14 @@
+env: development
+http:
+  port: 3000
+  limiter:
+    requests: 1000
+    expiration: 1s
+metrics:
+  addr: localhost:9091
+postgres:
+  uri: postgres://postgres:postgres@localhost:5432/template?sslmode=disable
+mongo:
+  uri: mongodb://localhost:27017
+redis:
+  addr: localhost:6379
