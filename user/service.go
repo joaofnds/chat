@@ -14,7 +14,7 @@ func NewUserService(repo Repository, probe Probe) *Service {
 }
 
 func (service *Service) CreateUser(name string) (User, error) {
-	user := User{name}
+	user := User{Name: name}
 
 	err := service.repo.CreateUser(context.Background(), &user)
 	if err != nil {
