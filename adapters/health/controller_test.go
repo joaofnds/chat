@@ -4,8 +4,7 @@ import (
 	"app/adapters/health"
 	apphttp "app/adapters/http"
 	"app/adapters/logger"
-	"app/adapters/mongo"
-	"app/adapters/redis"
+	"app/adapters/postgres"
 	"app/config"
 	"app/test"
 	. "app/test/matchers"
@@ -40,8 +39,7 @@ var _ = Describe("/health", func() {
 				test.RandomAppConfigPort,
 				apphttp.NopProbeProvider,
 				config.Module,
-				redis.Module,
-				mongo.Module,
+				postgres.Module,
 				apphttp.FiberModule,
 				health.Module,
 				fx.Invoke(func(app *fiber.App, controller *health.Controller) {
@@ -60,16 +58,10 @@ var _ = Describe("/health", func() {
 			Expect(res.StatusCode).To(Equal(http.StatusOK))
 		})
 
-		It("checks mongo connection", func() {
+		It("checks postgres connection", func() {
 			res := Must2(http.Get(url))
 			body := Must2(io.ReadAll(res.Body))
-			Expect(body).To(ContainSubstring(`"mongo":{"status":"up"}`))
-		})
-
-		It("checks redis connection", func() {
-			res := Must2(http.Get(url))
-			body := Must2(io.ReadAll(res.Body))
-			Expect(body).To(ContainSubstring(`"redis":{"status":"up"}`))
+			Expect(body).To(ContainSubstring(`"postgres":{"status":"up"}`))
 		})
 	})
 
@@ -103,16 +95,10 @@ var _ = Describe("/health", func() {
 			Expect(res.StatusCode).To(Equal(http.StatusServiceUnavailable))
 		})
 
-		It("checks mongo connection", func() {
+		It("checks postgres connection", func() {
 			res := Must2(http.Get(url))
 			body := Must2(io.ReadAll(res.Body))
-			Expect(body).To(ContainSubstring(`"mongo":{"status":"down"}`))
-		})
-
-		It("checks redis connection", func() {
-			res := Must2(http.Get(url))
-			body := Must2(io.ReadAll(res.Body))
-			Expect(body).To(ContainSubstring(`"redis":{"status":"down"}`))
+			Expect(body).To(ContainSubstring(`"postgres":{"status":"down"}`))
 		})
 	})
 })

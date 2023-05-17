@@ -5,11 +5,9 @@ import (
 	"app/adapters/http"
 	"app/adapters/logger"
 	"app/adapters/metrics"
-	"app/adapters/mongo"
-	"app/adapters/redis"
+	"app/adapters/postgres"
 
 	"app/config"
-	"app/kv"
 	"app/user"
 
 	"go.uber.org/fx"
@@ -23,10 +21,8 @@ func main() {
 		health.Module,
 
 		http.Module,
-		mongo.Module,
-		redis.Module,
+		postgres.Module,
 
 		user.Module,
-		kv.Module,
 	).Run()
 }

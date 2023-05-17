@@ -1,27 +1,21 @@
 package health
 
 import (
-	"app/adapters/mongo"
-	"app/adapters/redis"
+	"app/adapters/postgres"
 
 	"context"
 )
 
 type Service struct {
-	mongoHealth mongo.HealthChecker
-	redisHealth redis.HealthChecker
+	postgresHealth postgres.HealthChecker
 }
 
-func NewHealthService(
-	mongoHealth mongo.HealthChecker,
-	redisHealth redis.HealthChecker,
-) *Service {
-	return &Service{mongoHealth, redisHealth}
+func NewHealthService(postgresHealth postgres.HealthChecker) *Service {
+	return &Service{postgresHealth}
 }
 
 func (s *Service) CheckHealth(ctx context.Context) Check {
 	return Check{
-		"mongo": NewStatus(s.mongoHealth.CheckHealth(ctx)),
-		"redis": NewStatus(s.redisHealth.CheckHealth(ctx)),
+		"postgres": NewStatus(s.postgresHealth.CheckHealth(ctx)),
 	}
 }
