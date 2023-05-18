@@ -14,7 +14,6 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/gofiber/fiber/v2"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"go.uber.org/fx"
@@ -40,11 +39,8 @@ var _ = Describe("/health", func() {
 				apphttp.NopProbeProvider,
 				config.Module,
 				postgres.Module,
-				apphttp.FiberModule,
+				apphttp.Module,
 				health.Module,
-				fx.Invoke(func(app *fiber.App, controller *health.Controller) {
-					controller.Register(app)
-				}),
 				fx.Populate(&cfg),
 			)
 			url = fmt.Sprintf("http://localhost:%d/health", cfg.Port)
@@ -74,13 +70,10 @@ var _ = Describe("/health", func() {
 				apphttp.NopProbeProvider,
 				test.RandomAppConfigPort,
 				config.Module,
-				apphttp.FiberModule,
+				apphttp.Module,
 				health.Module,
 				fx.Decorate(func() health.Checker {
 					return health.NewUnhealthyHealthService()
-				}),
-				fx.Invoke(func(app *fiber.App, controller *health.Controller) {
-					controller.Register(app)
 				}),
 				fx.Populate(&cfg),
 			)

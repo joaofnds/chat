@@ -39,6 +39,7 @@ var _ = Describe("conversation service", func() {
 			logger.NopLoggerProvider,
 			test.RandomAppConfigPort,
 			test.Transaction,
+			test.TestFiber,
 			user.NopProbeProvider,
 			user.Module,
 			postgres.Module,
