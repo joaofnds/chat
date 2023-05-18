@@ -3,6 +3,7 @@ package postgres
 import (
 	"context"
 	"database/sql"
+	_ "embed"
 
 	"go.uber.org/fx"
 	"go.uber.org/zap"
@@ -10,13 +11,16 @@ import (
 	"gorm.io/gorm"
 )
 
+//go:embed schema.sql
+var schema string
+
 var Module = fx.Module(
 	"postgres",
 	fx.Provide(NewGORMDB),
 	fx.Provide(NewSQLDB),
 	fx.Provide(NewHealthChecker),
 	fx.Invoke(HookConnection),
-	fx.Invoke(enableUUIDExtension),
+	fx.Invoke(CreateTables),
 )
 
 func NewGORMDB(postgresConfig Config, logger *zap.Logger) (*gorm.DB, error) {
@@ -34,7 +38,7 @@ func HookConnection(lifecycle fx.Lifecycle, db *sql.DB, logger *zap.Logger) {
 	})
 }
 
-func enableUUIDExtension(db *sql.DB) error {
-	_, err := db.ExecContext(context.Background(), `CREATE EXTENSION IF NOT EXISTS "uuid-ossp";`)
+func CreateTables(db *sql.DB) error {
+	_, err := db.ExecContext(context.Background(), schema)
 	return err
 }
