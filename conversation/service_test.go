@@ -18,9 +18,9 @@ import (
 	"go.uber.org/fx/fxtest"
 )
 
-func TestUser(t *testing.T) {
+func TestConversation(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "User Service Test")
+	RunSpecs(t, "conversation suite")
 }
 
 var _ = Describe("conversation service", func() {

@@ -19,6 +19,11 @@ func (repo *PostgresRepository) CreateUser(ctx context.Context, user *User) erro
 	return gormErr(repo.db.WithContext(ctx).Create(user))
 }
 
+func (repo *PostgresRepository) Find(ctx context.Context, id string) (User, error) {
+	var user User
+	return user, gormErr(repo.db.WithContext(ctx).First(&user, "id = ?", id))
+}
+
 func (repo *PostgresRepository) FindByName(ctx context.Context, name string) (User, error) {
 	var user User
 	return user, gormErr(repo.db.WithContext(ctx).First(&user, "name = ?", name))

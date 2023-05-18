@@ -39,6 +39,10 @@ func (service *Service) List() ([]User, error) {
 	return service.repo.All(context.Background())
 }
 
+func (service *Service) Find(id string) (User, error) {
+	return service.repo.Find(context.Background(), id)
+}
+
 func (service *Service) FindByName(name string) (User, error) {
 	user, err := service.repo.FindByName(context.Background(), name)
 	if err != nil {

@@ -18,6 +18,7 @@ type Probe interface {
 type Repository interface {
 	CreateUser(context.Context, *User) error
 	All(context.Context) ([]User, error)
+	Find(context.Context, string) (User, error)
 	FindByName(context.Context, string) (User, error)
 	Delete(context.Context, User) error
 	DeleteAll(context.Context) error

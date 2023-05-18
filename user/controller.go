@@ -1,6 +1,7 @@
 package user
 
 import (
+	"encoding/json"
 	"errors"
 	"net/http"
 	"strings"
@@ -44,12 +45,16 @@ func (c *Controller) Create(ctx *fiber.Ctx) error {
 		return ctx.SendStatus(http.StatusBadRequest)
 	}
 
-	_, err = c.service.CreateUser(user.Name)
+	user, err = c.service.CreateUser(user.Name)
 	if err != nil {
 		return ctx.SendStatus(http.StatusInternalServerError)
 	}
 
-	return ctx.SendStatus(http.StatusCreated)
+	b, err := json.Marshal(user)
+	if err != nil {
+		return ctx.SendStatus(http.StatusInternalServerError)
+	}
+	return ctx.Status(http.StatusCreated).Send(b)
 }
 
 func (c *Controller) Delete(ctx *fiber.Ctx) error {
