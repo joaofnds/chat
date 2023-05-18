@@ -35,18 +35,17 @@ var _ = Describe("conversation service", func() {
 		ctx = context.Background()
 		app = fxtest.New(
 			GinkgoT(),
+			config.Module,
 			logger.NopLoggerProvider,
 			test.RandomAppConfigPort,
+			test.Transaction,
 			user.NopProbeProvider,
-			config.Module,
-			postgres.Module,
 			user.Module,
+			postgres.Module,
 			conversation.Module,
 			fx.Populate(&sut, &userService),
 		)
 		app.RequireStart()
-		Must(userService.DeleteAll())
-		Must(sut.DeleteAll(ctx))
 	})
 
 	AfterEach(func() { app.RequireStop() })
