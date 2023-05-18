@@ -7,5 +7,5 @@ type Message struct {
 	ConversationID string    `json:"conversation_id"`
 	AuthorID       string    `json:"author_id"`
 	Text           string    `json:"text"`
-	Timestamp      time.Time `json:"timestamp"`
+	Timestamp      time.Time `json:"timestamp" gorm:"default:now()"`
 }
