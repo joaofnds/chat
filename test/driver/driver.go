@@ -26,6 +26,21 @@ func (d *Driver) CreateUser(name string) (user.User, error) {
 	}, http.StatusCreated, &u)
 }
 
+func (d *Driver) GetUser(id string) (user.User, error) {
+	var u user.User
+
+	return u, makeJSONRequest(func() (*http.Response, error) {
+		return d.api.GetUser(id)
+	}, http.StatusOK, &u)
+}
+
+func (d *Driver) ListUsers() ([]user.User, error) {
+	var users []user.User
+	return users, makeJSONRequest(func() (*http.Response, error) {
+		return d.api.ListUsers()
+	}, http.StatusOK, &users)
+}
+
 func (d *Driver) GetConversation(id string) (conversation.Conversation, error) {
 	var convo conversation.Conversation
 

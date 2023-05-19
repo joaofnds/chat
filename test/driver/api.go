@@ -24,6 +24,20 @@ func (a API) CreateUser(name string) (*http.Response, error) {
 	)
 }
 
+func (a API) GetUser(id string) (*http.Response, error) {
+	return req.Get(
+		a.baseURL+"/users/"+id,
+		map[string]string{"Accept": "application/json"},
+	)
+}
+
+func (a API) ListUsers() (*http.Response, error) {
+	return req.Get(
+		a.baseURL+"/users",
+		map[string]string{"Accept": "application/json"},
+	)
+}
+
 func (a API) GetConversation(id string) (*http.Response, error) {
 	return req.Get(
 		a.baseURL+"/conversations/"+id,

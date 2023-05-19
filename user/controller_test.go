@@ -6,12 +6,10 @@ import (
 	"app/adapters/postgres"
 	"app/config"
 	"app/test"
+	"app/test/driver"
 	. "app/test/matchers"
 	"app/user"
-	"bytes"
 	"fmt"
-	"io"
-	"net/http"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -20,14 +18,16 @@ import (
 )
 
 var _ = Describe("/users", Ordered, func() {
-	var app *fxtest.App
-	var userService *user.Service
-	var url string
+	var (
+		app         *driver.Driver
+		fxApp       *fxtest.App
+		userService *user.Service
+	)
 
 	BeforeAll(func() {
 		var httpConfig apphttp.Config
 
-		app = fxtest.New(
+		fxApp = fxtest.New(
 			GinkgoT(),
 			logger.NopLoggerProvider,
 			test.RandomAppConfigPort,
@@ -38,45 +38,29 @@ var _ = Describe("/users", Ordered, func() {
 			fx.Populate(&httpConfig, &userService),
 		).RequireStart()
 
-		url = fmt.Sprintf("http://localhost:%d/users", httpConfig.Port)
+		app = driver.NewDriver(fmt.Sprintf("http://localhost:%d", httpConfig.Port))
 	})
 
 	AfterAll(func() {
-		app.RequireStop()
+		fxApp.RequireStop()
 	})
 
 	BeforeEach(func() {
 		Must(userService.DeleteAll())
 	})
 
-	Context("GET", func() {
-		It("concats all user's names", func() {
-			Must2(userService.CreateUser("joao"))
-			Must2(userService.CreateUser("fernandes"))
+	It("creates and lists users", func() {
+		joao := Must2(app.CreateUser("joao"))
+		fnds := Must2(app.CreateUser("fnds"))
 
-			res := Must2(http.Get(url))
-			Expect(res.StatusCode).To(Equal(http.StatusOK))
+		users := Must2(app.ListUsers())
 
-			b := Must2(io.ReadAll(res.Body))
-
-			Expect(string(b)).To(Equal("joaofernandes"))
-		})
+		Expect(users).To(Equal([]user.User{joao, fnds}))
 	})
 
-	Context("POST", func() {
-		It("adds the user", func() {
-			body := bytes.NewBufferString(`{"name": "joao"}`)
-			res := Must2(http.Post(url, "application/json", body))
-			Expect(res.StatusCode).To(Equal(http.StatusCreated))
-
-			body = bytes.NewBufferString(`{"name": "vitor"}`)
-			res = Must2(http.Post(url, "application/json", body))
-			Expect(res.StatusCode).To(Equal(http.StatusCreated))
-
-			res, _ = http.Get(url)
-			b := Must2(io.ReadAll(res.Body))
-
-			Expect(string(b)).To(Equal("joaovitor"))
-		})
+	It("gets the user", func() {
+		joao := Must2(app.CreateUser("joao"))
+		found := Must2(app.GetUser(joao.ID))
+		Expect(found).To(Equal(joao))
 	})
 })
