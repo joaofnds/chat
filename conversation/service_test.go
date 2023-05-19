@@ -40,6 +40,7 @@ var _ = Describe("conversation service", func() {
 			test.RandomAppConfigPort,
 			test.Transaction,
 			test.TestFiber,
+			test.TestSocketIO,
 			user.NopProbeProvider,
 			user.Module,
 			postgres.Module,

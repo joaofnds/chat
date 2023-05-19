@@ -19,11 +19,33 @@ type Controller struct {
 
 func (c *Controller) Register(app *fiber.App) {
 	convos := app.Group("/conversations")
+	convos.Get("/", c.getConversations)
 	convos.Post("/", c.createConversation)
 
 	convo := convos.Group("/:id", c.middlewareFindConversation)
 	convo.Get("/", c.getConversation)
 	convo.Post("/", c.sendMessage)
+}
+
+func (c *Controller) getConversations(ctx *fiber.Ctx) error {
+	userID := ctx.Query("userID")
+	if userID == "" {
+		return ctx.SendStatus(http.StatusBadRequest)
+	}
+
+	u, err := c.userService.Find(userID)
+	if err != nil {
+		if errors.Is(err, user.ErrNotFound) {
+			return ctx.SendStatus(http.StatusNotFound)
+		}
+		return ctx.SendStatus(http.StatusInternalServerError)
+	}
+
+	convos, err := c.conversationService.FindForUser(ctx.Context(), u)
+	if err != nil {
+		return ctx.SendStatus(http.StatusInternalServerError)
+	}
+	return ctx.JSON(convos)
 }
 
 func (c *Controller) createConversation(ctx *fiber.Ctx) error {

@@ -8,7 +8,6 @@ import (
 	"app/test/driver"
 	"app/user"
 	"fmt"
-	"testing"
 
 	"app/adapters/http"
 	"app/adapters/logger"
@@ -21,11 +20,6 @@ import (
 	"go.uber.org/fx"
 	"go.uber.org/fx/fxtest"
 )
-
-func TestConversationController(t *testing.T) {
-	RegisterFailHandler(Fail)
-	RunSpecs(t, "conversation controller")
-}
 
 var _ = Describe("/conversation", func() {
 	var (
@@ -40,6 +34,7 @@ var _ = Describe("/conversation", func() {
 			logger.NopLoggerProvider,
 			test.RandomAppConfigPort,
 			test.Transaction,
+			test.TestSocketIO,
 			config.Module,
 			http.Module,
 			postgres.Module,
@@ -47,8 +42,7 @@ var _ = Describe("/conversation", func() {
 			conversation.Module,
 			fx.Populate(&httpConfig),
 		).RequireStart()
-		url := fmt.Sprintf("http://localhost:%d", httpConfig.Port)
-		app = driver.NewDriver(url)
+		app = driver.NewDriver(fmt.Sprintf("http://localhost:%d", httpConfig.Port))
 	})
 
 	AfterEach(func() { fxApp.RequireStop() })

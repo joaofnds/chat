@@ -9,10 +9,11 @@ import (
 
 type Service struct {
 	repo Repository
+	ws   MessagePublisher
 }
 
-func NewService(repo Repository) *Service {
-	return &Service{repo: repo}
+func NewService(repo Repository, ws MessagePublisher) *Service {
+	return &Service{repo: repo, ws: ws}
 }
 
 func (service *Service) Create(ctx context.Context, user1, user2 user.User) (Conversation, error) {
@@ -29,5 +30,8 @@ func (service *Service) FindForUser(ctx context.Context, user user.User) ([]Conv
 
 func (service *Service) SendMessage(ctx context.Context, convo Conversation, author user.User, text string) (message.Message, error) {
 	msg := message.Message{AuthorID: author.ID, Text: text}
-	return msg, service.repo.AddMessage(ctx, convo, &msg)
+	if err := service.repo.AddMessage(ctx, convo, &msg); err != nil {
+		return msg, err
+	}
+	return msg, service.ws.PublishMessage(convo, author, msg)
 }

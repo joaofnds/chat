@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <style>
+      body {
+        background-color: #333;
+        color: white;
+      }
+    </style>
+  </head>
+  <body>
+    <form action="#" id="create-user">
+      <p>
+        <input type="text" name="user-name" />
+        <input type="submit" value="create user" />
+      </p>
+    </form>
+
+    <form action="#" id="create-convo">
+      <p>
+        <select name="user-1" required>
+          <option disabled selected value>-</option>
+        </select>
+        <select name="user-2" required>
+          <option disabled selected value>-</option>
+        </select>
+        <input type="submit" value="create conversation" />
+      </p>
+    </form>
+
+    <form action="#" id="send-message">
+      <p>
+        <label>
+          send as:
+          <select name="send-as" required>
+            <option disabled selected value>-</option>
+          </select>
+        </label>
+        <label>
+          to:
+          <select name="convo" required>
+            <option disabled selected value>-</option>
+          </select>
+        </label>
+        <input type="text" name="message" minlength="2" required />
+        <input type="submit" value="send message" />
+      </p>
+    </form>
+
+    <label>
+      receive as:
+      <select id="receive-as">
+        <option disabled selected value>-</option>
+      </select>
+      <br />
+    </label>
+
+    messages:
+    <ul id="messages"></ul>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.6.1/socket.io.js"></script>
+    <script>
+      const messagesEl = document.getElementById("messages");
+      const receiveAsEl = document.getElementById("receive-as");
+      const createUserForm = document.getElementById("create-user");
+      const sendMessageForm = document.getElementById("send-message");
+      const createConvoForm = document.getElementById("create-convo");
+      const sendAsEl = sendMessageForm.querySelector("select[name=send-as]");
+      const convosEl = sendMessageForm.querySelector("select[name=convo]");
+
+      sendMessageForm.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const formData = new FormData(sendMessageForm);
+        fetch("/conversations/" + formData.get("convo"), {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            author_id: formData.get("send-as"),
+            text: formData.get("message"),
+          }),
+        });
+      });
+
+      createConvoForm.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const formData = new FormData(createConvoForm);
+        fetch("/conversations", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            sender_id: formData.get("user-1"),
+            receiver_id: formData.get("user-2"),
+          }),
+        })
+          .then((res) => res.json())
+          .then((convo) => appendConvo(convo))
+          .catch(console.error);
+      });
+
+      createUserForm.addEventListener("submit", (e) => {
+        e.preventDefault();
+        fetch("/users", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: new FormData(createUserForm).get("user-name"),
+          }),
+        })
+          .then((res) => res.json())
+          .then((user) => appendUser(user))
+          .catch(console.error);
+      });
+
+      function refreshConversations(userID) {
+        fetch(`/conversations?userID=${userID}`)
+          .then((res) => res.json())
+          .then((convos) => {
+            convosEl.innerHTML = `<option disabled selected value>-</option>`;
+            convos.forEach((c) => appendConvo(c));
+          })
+          .catch(console.error);
+      }
+
+      function refreshUsers() {
+        fetch("/users")
+          .then((res) => res.json())
+          .then((users) => {
+            authAs(users[0].id);
+            users.forEach((user) => appendUser(user));
+            refreshConversations(users[0].id);
+          })
+          .catch(console.error);
+      }
+      refreshUsers();
+
+      function appendConvo(convo) {
+        const name = convo.users.map((u) => u.name).join("-");
+        convosEl.appendChild(new Option(name, convo.id));
+      }
+
+      function appendUser({ id, name }) {
+        const o = () => new Option(name, id);
+        createConvoForm.querySelector("select[name=user-1]").appendChild(o());
+        createConvoForm.querySelector("select[name=user-2]").appendChild(o());
+        receiveAsEl.appendChild(o());
+        sendAsEl.appendChild(o());
+      }
+
+      sendAsEl.addEventListener("change", () => {
+        refreshConversations(sendAsEl.value);
+      });
+
+      receiveAsEl.addEventListener("change", () => {
+        authAs(receiveAsEl.value);
+      });
+
+      const socket = io("/");
+
+      const authAs = (id) => socket.emit("user", id);
+
+      socket.on("connect", () => console.log("connected"));
+      socket.on("disconnect", () => console.log("disconnected"));
+
+      socket.on("msg", (msg) => {
+        const { message, author } = JSON.parse(msg);
+
+        const li = document.createElement("li");
+        li.innerText = `[${new Date(message.timestamp).toLocaleString()}] ${
+          author.name
+        }: ${message.text}`;
+        messagesEl.appendChild(li);
+      });
+    </script>
+  </body>
+</html>

@@ -14,4 +14,7 @@ var Module = fx.Module(
 
 	fx.Provide(NewController),
 	fx.Invoke(func(app *fiber.App, controller *Controller) { controller.Register(app) }),
+
+	fx.Provide(NewSocketIOMessagePublisher),
+	fx.Provide(func(s *SocketIOMessagePublisher) MessagePublisher { return s }),
 )

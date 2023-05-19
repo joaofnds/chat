@@ -18,3 +18,7 @@ type Repository interface {
 	FindForUser(ctx context.Context, user user.User) ([]Conversation, error)
 	AddMessage(ctx context.Context, convo Conversation, msg *message.Message) error
 }
+
+type MessagePublisher interface {
+	PublishMessage(convo Conversation, author user.User, msg message.Message) error
+}

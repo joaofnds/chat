@@ -4,8 +4,8 @@ import (
 	"app/adapters/health"
 	"app/adapters/http"
 	"app/adapters/logger"
-	"app/adapters/metrics"
 	"app/adapters/postgres"
+	"app/adapters/websocket"
 
 	"app/config"
 	"app/conversation"
@@ -19,11 +19,11 @@ func main() {
 	fx.New(
 		config.Module,
 		logger.Module,
-		metrics.Module,
 		health.Module,
 
-		http.Module,
 		postgres.Module,
+		http.Module,
+		websocket.Module,
 
 		user.Module,
 		conversation.Module,
