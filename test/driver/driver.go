@@ -83,17 +83,3 @@ func makeJSONRequest(f func() (*http.Response, error), expectedStatus int, v any
 
 	return json.Unmarshal(b, v)
 }
-
-func makeRequest(f func() (*http.Response, error), expectedStatus int) error {
-	res, err := f()
-	if err != nil {
-		return err
-	}
-	defer res.Body.Close()
-
-	if res.StatusCode != expectedStatus {
-		return fmt.Errorf("expected status %d, got %d", expectedStatus, res.StatusCode)
-	}
-
-	return nil
-}

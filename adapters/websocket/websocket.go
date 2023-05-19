@@ -7,6 +7,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/zishang520/socket.io/socket"
 	"go.uber.org/fx"
+	"go.uber.org/zap"
 )
 
 var Module = fx.Module(
@@ -26,14 +27,17 @@ func Register(app *fiber.App, server *socket.Server) {
 	app.All("/socket.io", adaptor.HTTPHandler(server.ServeHandler(nil)))
 }
 
-func Setup(server *socket.Server) {
-	server.On("connection", func(clients ...any) {
+func Setup(server *socket.Server, logger *zap.Logger) error {
+	return server.On("connection", func(clients ...any) {
 		client := clients[0].(*socket.Socket)
 
-		client.On("user", func(data ...any) {
+		err := client.On("user", func(data ...any) {
 			id := data[0].(string)
 			client.Join(socket.Room("user:" + id))
 		})
+		if err != nil {
+			logger.Error("failed to listen to user event", zap.Error(err))
+		}
 	})
 }
 

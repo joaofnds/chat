@@ -36,11 +36,13 @@ jobs:
     runs-on: ubuntu-latest
     services:
       postgres:
-        image: postgres:5.0.6
-        env:
-          POSTGRES_PASSWORD: postgres
+        image: postgres:alpine
         ports:
-          - 27017:27017
+          - 5432:5432
+        env:
+          POSTGRES_DB: chat
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
 
     steps:
       - uses: actions/checkout@v3
