@@ -5,13 +5,14 @@
       body {
         background-color: #333;
         color: white;
+        font-family: sans-serif;
       }
     </style>
   </head>
   <body>
     <form action="#" id="create-user">
       <p>
-        <input type="text" name="user-name" />
+        <input type="text" name="user-name" placeholder="name" />
         <input type="submit" value="create user" />
       </p>
     </form>
@@ -42,7 +43,13 @@
             <option disabled selected value>-</option>
           </select>
         </label>
-        <input type="text" name="message" minlength="2" required />
+        <input
+          type="text"
+          name="message"
+          placeholder="message"
+          minlength="2"
+          required
+        />
         <input type="submit" value="send message" />
       </p>
     </form>
@@ -52,8 +59,10 @@
       <select id="receive-as">
         <option disabled selected value>-</option>
       </select>
-      <br />
     </label>
+
+    <br />
+    <br />
 
     messages:
     <ul id="messages"></ul>
